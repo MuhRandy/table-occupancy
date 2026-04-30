@@ -34,7 +34,8 @@ export default function Dashboard() {
   const [showEditTableForm, setShowEditTableForm] = useState(false);
   const [editingLobby, setEditingLobby] = useState<Lobby | null>(null);
   const [editingTable, setEditingTable] = useState<TableData | null>(null);
-  const [selectedLobbyId, setSelectedLobbyId] = useState<string | undefined>();
+  // Hapus variabel selectedLobbyId jika tidak digunakan, atau gunakan tanda underscore
+  const [_selectedLobbyId, setSelectedLobbyId] = useState<string | undefined>();
 
   const isLoading = lobbiesLoading || tablesLoading;
 
@@ -52,7 +53,11 @@ export default function Dashboard() {
     }
   };
 
-  const handleAddTable = async (data: any) => {
+  const handleAddTable = async (data: {
+    lobby_id: string;
+    number: string;
+    seats: number;
+  }) => {
     await addTable(data);
   };
 
@@ -192,9 +197,10 @@ export default function Dashboard() {
         }}
         onSave={editingLobby ? handleUpdateLobby : addLobby}
       />
+
       <TableForm
         isOpen={showTableForm}
-        editTable={null}
+        preselectedLobbyId={_selectedLobbyId}
         lobbies={lobbies}
         onClose={() => {
           setShowTableForm(false);
@@ -202,6 +208,7 @@ export default function Dashboard() {
         }}
         onSave={handleAddTable}
       />
+
       <TableEditForm
         isOpen={showEditTableForm}
         table={editingTable}
