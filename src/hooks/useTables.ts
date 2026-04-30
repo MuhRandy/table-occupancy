@@ -26,16 +26,21 @@ export function useTables() {
     loadTables();
   }, []);
 
-  // ========== PERBAIKAN: Tambahkan status dan reserved default ==========
-  const addTable = async (
-    tableData: Omit<TableData, "id" | "created_at" | "updated_at">,
-  ) => {
+  const addTable = async (tableData: {
+    lobby_id: string;
+    number: string;
+    seats: number;
+    status?: "available" | "occupied";
+    reserved?: boolean;
+  }) => {
     const { data, error } = await supabase
       .from("tables")
       .insert({
-        ...tableData,
-        status: "available", // ← Default status
-        reserved: false, // ← Default reserved
+        lobby_id: tableData.lobby_id,
+        number: tableData.number,
+        seats: tableData.seats,
+        status: tableData.status || "available",
+        reserved: tableData.reserved ?? false,
       })
       .select()
       .single();
