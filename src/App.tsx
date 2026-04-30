@@ -1,9 +1,9 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { useAuth } from "./hooks/useAuth";
-import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import LoadingSpinner from "./components/Common/LoadingSpinner";
+import Login from "./pages/Login";
 
 function App() {
   const { session, loading } = useAuth();
