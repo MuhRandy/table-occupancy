@@ -1,5 +1,4 @@
-import { type JSX } from "react";
-import { IconDoor, IconEdit, IconPlus } from "@tabler/icons-react";
+import { IconDoor, IconEdit, IconPlus, IconTrash } from "@tabler/icons-react";
 import TableCard from "../Table/TableCard";
 import type { Lobby, TableData, UserRole } from "../../types";
 
@@ -8,7 +7,9 @@ interface LobbyCardProps {
   tables: TableData[];
   role: UserRole | null;
   onEditLobby: (lobby: Lobby) => void;
+  onDeleteLobby: (id: string) => void; // ← PERBAIKAN: tambahkan prop ini
   onEditTable: (table: TableData) => void;
+  onDeleteTable: (id: string) => void; // ← PERBAIKAN: tambahkan prop ini
   onStatusChange: (
     id: string,
     status: "available" | "occupied",
@@ -22,10 +23,12 @@ export default function LobbyCard({
   tables,
   role,
   onEditLobby,
+  onDeleteLobby,
   onEditTable,
+  onDeleteTable,
   onStatusChange,
   onAddTable,
-}: LobbyCardProps): JSX.Element {
+}: LobbyCardProps) {
   const lobbyTables = tables.filter((t) => t.lobby_id === lobby.id);
   const isEditor = role === "editor";
 
@@ -44,15 +47,22 @@ export default function LobbyCard({
             <>
               <button
                 onClick={() => onAddTable(lobby.id)}
-                className="text-gray-400 hover:text-green-600 text-sm"
+                className="text-gray-400 hover:text-green-600"
               >
                 <IconPlus size={16} />
               </button>
               <button
                 onClick={() => onEditLobby(lobby)}
-                className="text-gray-400 hover:text-blue-600 text-sm"
+                className="text-gray-400 hover:text-blue-600"
               >
                 <IconEdit size={16} />
+              </button>
+              {/* ========== PERBAIKAN: Tambahkan tombol delete ========== */}
+              <button
+                onClick={() => onDeleteLobby(lobby.id)}
+                className="text-gray-400 hover:text-red-600"
+              >
+                <IconTrash size={16} />
               </button>
             </>
           )}
@@ -65,7 +75,8 @@ export default function LobbyCard({
             key={table.id}
             table={table}
             role={role}
-            onEdit={onEditTable}
+            onEdit={() => onEditTable(table)}
+            onDelete={() => onDeleteTable(table.id)} // ← PERBAIKAN: tambahkan prop onDelete
             onStatusChange={onStatusChange}
           />
         ))}

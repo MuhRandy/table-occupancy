@@ -7,10 +7,6 @@ export function useLobbies() {
   const [lobbies, setLobbies] = useState<Lobby[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadLobbies();
-  }, []);
-
   const loadLobbies = async () => {
     const { data, error } = await supabase
       .from("lobbies")
@@ -25,6 +21,10 @@ export function useLobbies() {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadLobbies();
+  }, []);
 
   const addLobby = async (name: string) => {
     const { data, error } = await supabase
@@ -42,6 +42,7 @@ export function useLobbies() {
     return data;
   };
 
+  // ========== PERBAIKAN: Tambahkan fungsi updateLobby ==========
   const updateLobby = async (id: string, name: string) => {
     const { error } = await supabase
       .from("lobbies")
@@ -56,5 +57,23 @@ export function useLobbies() {
     toast.success("Lobi berhasil diupdate");
   };
 
-  return { lobbies, loading, addLobby, updateLobby };
+  // ========== PERBAIKAN: Tambahkan fungsi deleteLobby ==========
+  const deleteLobby = async (id: string) => {
+    const { error } = await supabase.from("lobbies").delete().eq("id", id);
+
+    if (error) {
+      toast.error("Gagal menghapus lobi");
+      throw error;
+    }
+    setLobbies(lobbies.filter((l) => l.id !== id));
+    toast.success("Lobi berhasil dihapus");
+  };
+
+  return {
+    lobbies,
+    loading,
+    addLobby,
+    updateLobby, // ← PERBAIKAN: return updateLobby
+    deleteLobby, // ← PERBAIKAN: return deleteLobby
+  };
 }

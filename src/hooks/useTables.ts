@@ -1,15 +1,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import toast from "react-hot-toast";
-import type { TableData, UserRole } from "../types";
+import type { TableData } from "../types";
 
-export function useTables(userRole: UserRole | null) {
+export function useTables() {
   const [tables, setTables] = useState<TableData[]>([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadTables();
-  }, []);
 
   const loadTables = async () => {
     const { data, error } = await supabase
@@ -25,6 +21,10 @@ export function useTables(userRole: UserRole | null) {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadTables();
+  }, []);
 
   const addTable = async (
     tableData: Omit<TableData, "id" | "created_at" | "updated_at">,
@@ -44,6 +44,7 @@ export function useTables(userRole: UserRole | null) {
     return data;
   };
 
+  // ========== PERBAIKAN: Tambahkan fungsi updateTable ==========
   const updateTable = async (id: string, updates: Partial<TableData>) => {
     const { error } = await supabase
       .from("tables")
@@ -56,6 +57,18 @@ export function useTables(userRole: UserRole | null) {
     }
     setTables(tables.map((t) => (t.id === id ? { ...t, ...updates } : t)));
     toast.success("Meja berhasil diupdate");
+  };
+
+  // ========== PERBAIKAN: Tambahkan fungsi deleteTable ==========
+  const deleteTable = async (id: string) => {
+    const { error } = await supabase.from("tables").delete().eq("id", id);
+
+    if (error) {
+      toast.error("Gagal menghapus meja");
+      throw error;
+    }
+    setTables(tables.filter((t) => t.id !== id));
+    toast.success("Meja berhasil dihapus");
   };
 
   const updateTableStatus = async (
@@ -78,40 +91,12 @@ export function useTables(userRole: UserRole | null) {
     toast.success("Status meja diupdate");
   };
 
-  const moveTable = async (id: string, newLobbyId: string) => {
-    const { error } = await supabase
-      .from("tables")
-      .update({ lobby_id: newLobbyId })
-      .eq("id", id);
-
-    if (error) {
-      toast.error("Gagal memindahkan meja");
-      throw error;
-    }
-    setTables(
-      tables.map((t) => (t.id === id ? { ...t, lobby_id: newLobbyId } : t)),
-    );
-    toast.success("Meja berhasil dipindahkan");
-  };
-
-  const deleteTable = async (id: string) => {
-    const { error } = await supabase.from("tables").delete().eq("id", id);
-
-    if (error) {
-      toast.error("Gagal menghapus meja");
-      throw error;
-    }
-    setTables(tables.filter((t) => t.id !== id));
-    toast.success("Meja berhasil dihapus");
-  };
-
   return {
     tables,
     loading,
     addTable,
-    updateTable,
+    updateTable, // ← PERBAIKAN: return updateTable
     updateTableStatus,
-    moveTable,
-    deleteTable,
+    deleteTable, // ← PERBAIKAN: return deleteTable
   };
 }

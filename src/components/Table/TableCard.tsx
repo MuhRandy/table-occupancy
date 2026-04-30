@@ -1,6 +1,6 @@
-import { type JSX } from "react";
 import {
   IconEdit,
+  IconTrash,
   IconUsers,
   IconArmchair,
   IconCalendar,
@@ -9,9 +9,9 @@ import type { TableData, UserRole } from "../../types";
 
 interface TableCardProps {
   table: TableData;
-  lobbyName?: string;
   role: UserRole | null;
-  onEdit: (table: TableData) => void;
+  onEdit: () => void;
+  onDelete: () => void; // ← PERBAIKAN: tambahkan prop onDelete
   onStatusChange: (
     id: string,
     status: "available" | "occupied",
@@ -23,8 +23,9 @@ export default function TableCard({
   table,
   role,
   onEdit,
+  onDelete,
   onStatusChange,
-}: TableCardProps): JSX.Element {
+}: TableCardProps) {
   const getStatusInfo = () => {
     if (table.reserved)
       return {
@@ -60,13 +61,22 @@ export default function TableCard({
             <IconUsers size={12} /> {table.seats} kursi
           </div>
         </div>
+        {/* ========== PERBAIKAN: Tambahkan tombol edit dan delete untuk editor ========== */}
         {isEditor && (
-          <button
-            onClick={() => onEdit(table)}
-            className="text-gray-400 hover:text-blue-600 transition"
-          >
-            <IconEdit size={16} />
-          </button>
+          <div className="flex gap-1">
+            <button
+              onClick={onEdit}
+              className="text-gray-400 hover:text-blue-600"
+            >
+              <IconEdit size={14} />
+            </button>
+            <button
+              onClick={onDelete}
+              className="text-gray-400 hover:text-red-600"
+            >
+              <IconTrash size={14} />
+            </button>
+          </div>
         )}
       </div>
 

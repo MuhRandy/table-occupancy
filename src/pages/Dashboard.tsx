@@ -1,162 +1,16 @@
 import { useState } from "react";
-import { IconPlus, IconLogout } from "@tabler/icons-react";
+import { IconLogout } from "@tabler/icons-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../hooks/useAuth";
 import { useLobbies } from "../hooks/useLobbies";
 import { useTables } from "../hooks/useTables";
 import LobbyCard from "../components/Lobby/LobbyCard";
+import LobbyForm from "../components/Lobby/LobbyForm";
+import TableForm from "../components/Table/TableForm";
+import TableEditForm from "../components/Table/TableEditForm";
 import LoadingSpinner from "../components/Common/LoadingSpinner";
 import EmptyState from "../components/Common/EmptyState";
 import type { Lobby, TableData } from "../types";
-import TableEditForm from "../components/Table/TableEditForm";
-
-// Komponen modal sederhana (bisa dipisah ke file terpisah)
-function LobbyModal({
-  isOpen,
-  onClose,
-  onSave,
-  initialName,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (name: string) => void;
-  initialName?: string;
-}) {
-  const [name, setName] = useState(initialName || "");
-  if (!isOpen) return null;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-    onSave(name.trim());
-    setName("");
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md">
-        <div className="p-4 border-b">
-          <h2 className="font-semibold text-lg">
-            {initialName ? "Edit Lobi" : "Tambah Lobi"}
-          </h2>
-        </div>
-        <form onSubmit={handleSubmit} className="p-4">
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Nama Lobi"
-            className="w-full border border-gray-300 rounded-xl px-4 py-2 mb-4"
-            autoFocus
-            required
-          />
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 border border-gray-300 rounded-xl py-2 hover:bg-gray-50"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              className="flex-1 bg-blue-600 text-white rounded-xl py-2 hover:bg-blue-700"
-            >
-              Simpan
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function TableFormModal({
-  isOpen,
-  onClose,
-  onSave,
-  lobbies,
-  preselectedLobbyId,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (data: any) => void;
-  lobbies: Lobby[];
-  preselectedLobbyId?: string;
-}) {
-  const [lobbyId, setLobbyId] = useState(
-    preselectedLobbyId || lobbies[0]?.id || "",
-  );
-  const [number, setNumber] = useState("");
-  const [seats, setSeats] = useState(4);
-  if (!isOpen) return null;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!number.trim()) return;
-    onSave({
-      lobby_id: lobbyId,
-      number: number.trim(),
-      seats,
-      status: "available",
-      reserved: false,
-    });
-    setNumber("");
-    setSeats(4);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md">
-        <div className="p-4 border-b">
-          <h2 className="font-semibold text-lg">Tambah Meja</h2>
-        </div>
-        <form onSubmit={handleSubmit} className="p-4 space-y-3">
-          <select
-            value={lobbyId}
-            onChange={(e) => setLobbyId(e.target.value)}
-            className="w-full border rounded-xl px-4 py-2"
-          >
-            {lobbies.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.name}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            value={number}
-            onChange={(e) => setNumber(e.target.value)}
-            placeholder="Nomor Meja"
-            className="w-full border rounded-xl px-4 py-2"
-            required
-          />
-          <input
-            type="number"
-            value={seats}
-            onChange={(e) => setSeats(parseInt(e.target.value))}
-            className="w-full border rounded-xl px-4 py-2"
-          />
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 border rounded-xl py-2"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              className="flex-1 bg-blue-600 text-white rounded-xl py-2"
-            >
-              Simpan
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 export default function Dashboard() {
   const { userRole, signOut } = useAuth();
@@ -165,6 +19,7 @@ export default function Dashboard() {
     loading: lobbiesLoading,
     addLobby,
     updateLobby,
+    deleteLobby,
   } = useLobbies();
   const {
     tables,
@@ -173,48 +28,56 @@ export default function Dashboard() {
     updateTable,
     updateTableStatus,
     deleteTable,
-  } = useTables(userRole);
+  } = useTables();
 
   const [showLobbyForm, setShowLobbyForm] = useState(false);
   const [showTableForm, setShowTableForm] = useState(false);
+  const [showEditTableForm, setShowEditTableForm] = useState(false);
   const [editingLobby, setEditingLobby] = useState<Lobby | null>(null);
   const [editingTable, setEditingTable] = useState<TableData | null>(null);
   const [selectedLobbyId, setSelectedLobbyId] = useState<string | undefined>();
-  const [showEditTableForm, setShowEditTableForm] = useState(false);
 
   const isLoading = lobbiesLoading || tablesLoading;
 
-  const handleEditLobby = (lobby: Lobby) => {
-    setEditingLobby(lobby);
-    setShowLobbyForm(true);
+  // ========== PERBAIKAN: Handler untuk update dan delete ==========
+  const handleUpdateLobby = async (id: string, name: string) => {
+    await updateLobby(id, name);
   };
 
-  const handleSaveLobby = async (name: string) => {
-    if (editingLobby) {
-      await updateLobby(editingLobby.id, name);
-      setEditingLobby(null);
-    } else {
-      await addLobby(name);
+  const handleDeleteLobby = async (id: string) => {
+    if (
+      confirm(
+        "Yakin ingin menghapus lobi ini? Semua meja di dalamnya juga akan terhapus.",
+      )
+    ) {
+      await deleteLobby(id);
     }
-    setShowLobbyForm(false);
   };
 
   const handleAddTable = async (data: any) => {
     await addTable(data);
-    setShowTableForm(false);
-    setSelectedLobbyId(undefined);
+  };
+
+  const handleUpdateTable = async (id: string, updates: Partial<TableData>) => {
+    await updateTable(id, updates);
+  };
+
+  const handleDeleteTable = async (id: string) => {
+    if (confirm("Yakin ingin menghapus meja ini?")) {
+      await deleteTable(id);
+    }
   };
 
   const getRoleInfo = () => {
     switch (userRole) {
       case "editor":
         return {
-          text: "🚀 Editor: Anda dapat menambah / edit lobi & meja, serta memindahkan meja antar lobi.",
+          text: "🚀 Editor: Anda dapat menambah / edit / hapus lobi & meja, serta mengubah status meja.",
           color: "border-blue-500",
         };
       case "helper":
         return {
-          text: "🛠️ Helper: Anda dapat mengubah status meja (terisi / kosong / dipesan).",
+          text: "🛠️ Helper: Anda hanya dapat mengubah status meja (terisi / kosong / dipesan).",
           color: "border-green-500",
         };
       default:
@@ -227,20 +90,6 @@ export default function Dashboard() {
   const roleInfo = getRoleInfo();
 
   if (isLoading) return <LoadingSpinner />;
-
-  // Handler untuk update table
-  const handleUpdateTable = async (id: string, updates: Partial<TableData>) => {
-    await updateTable(id, updates);
-    setShowEditTableForm(false);
-    setEditingTable(null);
-  };
-
-  // Handler untuk delete table
-  const handleDeleteTable = async (id: string) => {
-    await deleteTable(id);
-    setShowEditTableForm(false);
-    setEditingTable(null);
-  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -285,15 +134,15 @@ export default function Dashboard() {
               setEditingLobby(null);
               setShowLobbyForm(true);
             }}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm flex items-center gap-2"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm"
           >
-            <IconPlus size={16} /> Tambah Lobi
+            + Tambah Lobi
           </button>
           <button
             onClick={() => setShowTableForm(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm flex items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm"
           >
-            <IconPlus size={16} /> Tambah Meja
+            + Tambah Meja
           </button>
         </div>
       )}
@@ -316,8 +165,16 @@ export default function Dashboard() {
               lobby={lobby}
               tables={tables}
               role={userRole}
-              onEditLobby={handleEditLobby}
-              onEditTable={setEditingTable}
+              onEditLobby={(lobby) => {
+                setEditingLobby(lobby);
+                setShowLobbyForm(true);
+              }}
+              onDeleteLobby={handleDeleteLobby}
+              onEditTable={(table) => {
+                setEditingTable(table);
+                setShowEditTableForm(true);
+              }}
+              onDeleteTable={handleDeleteTable}
               onStatusChange={updateTableStatus}
               onAddTable={(lobbyId) => {
                 setSelectedLobbyId(lobbyId);
@@ -328,24 +185,25 @@ export default function Dashboard() {
         </div>
       )}
 
-      <LobbyModal
+      {/* Modals */}
+      <LobbyForm
         isOpen={showLobbyForm}
+        editLobby={editingLobby}
         onClose={() => {
           setShowLobbyForm(false);
           setEditingLobby(null);
         }}
-        onSave={handleSaveLobby}
-        initialName={editingLobby?.name}
+        onSave={editingLobby ? handleUpdateLobby : addLobby}
       />
-      <TableFormModal
+      <TableForm
         isOpen={showTableForm}
+        lobbies={lobbies}
+        preselectedLobbyId={selectedLobbyId}
         onClose={() => {
           setShowTableForm(false);
           setSelectedLobbyId(undefined);
         }}
         onSave={handleAddTable}
-        lobbies={lobbies}
-        preselectedLobbyId={selectedLobbyId}
       />
       <TableEditForm
         isOpen={showEditTableForm}
