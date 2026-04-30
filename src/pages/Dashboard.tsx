@@ -34,10 +34,14 @@ export default function Dashboard() {
   const [showEditTableForm, setShowEditTableForm] = useState(false);
   const [editingLobby, setEditingLobby] = useState<Lobby | null>(null);
   const [editingTable, setEditingTable] = useState<TableData | null>(null);
-  // Hapus variabel selectedLobbyId jika tidak digunakan, atau gunakan tanda underscore
-  const [_selectedLobbyId, setSelectedLobbyId] = useState<string | undefined>();
+  const [selectedLobbyId, setSelectedLobbyId] = useState<string | undefined>();
 
   const isLoading = lobbiesLoading || tablesLoading;
+
+  // ========== PERBAIKAN: Handler untuk lobby ==========
+  const handleAddLobby = async (name: string) => {
+    await addLobby(name);
+  };
 
   const handleUpdateLobby = async (id: string, name: string) => {
     await updateLobby(id, name);
@@ -53,6 +57,7 @@ export default function Dashboard() {
     }
   };
 
+  // ========== PERBAIKAN: Handler untuk table ==========
   const handleAddTable = async (data: {
     lobby_id: string;
     number: string;
@@ -188,6 +193,7 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* ========== PERBAIKAN: Props onSave sudah sesuai ========== */}
       <LobbyForm
         isOpen={showLobbyForm}
         editLobby={editingLobby}
@@ -195,12 +201,12 @@ export default function Dashboard() {
           setShowLobbyForm(false);
           setEditingLobby(null);
         }}
-        onSave={editingLobby ? handleUpdateLobby : addLobby}
+        onSave={editingLobby ? handleUpdateLobby : handleAddLobby}
       />
 
       <TableForm
         isOpen={showTableForm}
-        preselectedLobbyId={_selectedLobbyId}
+        preselectedLobbyId={selectedLobbyId}
         lobbies={lobbies}
         onClose={() => {
           setShowTableForm(false);

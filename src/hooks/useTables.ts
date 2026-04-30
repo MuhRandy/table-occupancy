@@ -26,12 +26,17 @@ export function useTables() {
     loadTables();
   }, []);
 
+  // ========== PERBAIKAN: Tambahkan status dan reserved default ==========
   const addTable = async (
     tableData: Omit<TableData, "id" | "created_at" | "updated_at">,
   ) => {
     const { data, error } = await supabase
       .from("tables")
-      .insert(tableData)
+      .insert({
+        ...tableData,
+        status: "available", // ← Default status
+        reserved: false, // ← Default reserved
+      })
       .select()
       .single();
 
@@ -44,7 +49,6 @@ export function useTables() {
     return data;
   };
 
-  // ========== PERBAIKAN: Tambahkan fungsi updateTable ==========
   const updateTable = async (id: string, updates: Partial<TableData>) => {
     const { error } = await supabase
       .from("tables")
@@ -57,18 +61,6 @@ export function useTables() {
     }
     setTables(tables.map((t) => (t.id === id ? { ...t, ...updates } : t)));
     toast.success("Meja berhasil diupdate");
-  };
-
-  // ========== PERBAIKAN: Tambahkan fungsi deleteTable ==========
-  const deleteTable = async (id: string) => {
-    const { error } = await supabase.from("tables").delete().eq("id", id);
-
-    if (error) {
-      toast.error("Gagal menghapus meja");
-      throw error;
-    }
-    setTables(tables.filter((t) => t.id !== id));
-    toast.success("Meja berhasil dihapus");
   };
 
   const updateTableStatus = async (
@@ -91,12 +83,23 @@ export function useTables() {
     toast.success("Status meja diupdate");
   };
 
+  const deleteTable = async (id: string) => {
+    const { error } = await supabase.from("tables").delete().eq("id", id);
+
+    if (error) {
+      toast.error("Gagal menghapus meja");
+      throw error;
+    }
+    setTables(tables.filter((t) => t.id !== id));
+    toast.success("Meja berhasil dihapus");
+  };
+
   return {
     tables,
     loading,
     addTable,
-    updateTable, // ← PERBAIKAN: return updateTable
+    updateTable,
     updateTableStatus,
-    deleteTable, // ← PERBAIKAN: return deleteTable
+    deleteTable,
   };
 }
