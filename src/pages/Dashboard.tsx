@@ -38,15 +38,11 @@ export default function Dashboard() {
 
   const isLoading = lobbiesLoading || tablesLoading;
 
-  // ========== PERBAIKAN: Handle null id untuk create lobby ==========
-  const handleAddLobby = async (name: string) => {
-    await addLobby(name);
-  };
-
-  // ========== PERBAIKAN: Update lobby hanya jika id tidak null ==========
-  const handleUpdateLobby = async (id: string | null, name: string) => {
+  const handleSaveLobby = async (id: string | null, name: string) => {
     if (id) {
       await updateLobby(id, name);
+    } else {
+      await addLobby(name);
     }
   };
 
@@ -60,7 +56,6 @@ export default function Dashboard() {
     }
   };
 
-  // ========== PERBAIKAN: Add table dengan status dan reserved default ==========
   const handleAddTable = async (data: {
     lobby_id: string;
     number: string;
@@ -207,7 +202,7 @@ export default function Dashboard() {
           setShowLobbyForm(false);
           setEditingLobby(null);
         }}
-        onSave={editingLobby ? handleUpdateLobby : handleAddLobby}
+        onSave={handleSaveLobby}
       />
 
       <TableForm
