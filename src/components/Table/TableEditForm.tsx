@@ -25,7 +25,6 @@ export default function TableEditForm({
   const [loading, setLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Reset form saat table berubah atau modal dibuka
   useEffect(() => {
     if (table && isOpen) {
       setNumber(table.number);
@@ -37,10 +36,7 @@ export default function TableEditForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!table) return;
-    if (!number.trim()) {
-      alert("Nomor meja harus diisi");
-      return;
-    }
+    if (!number.trim()) return;
 
     setLoading(true);
     try {
@@ -51,7 +47,7 @@ export default function TableEditForm({
       });
       onClose();
     } catch (error) {
-      console.error("Error saving table:", error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -64,7 +60,7 @@ export default function TableEditForm({
       await onDelete(table.id);
       onClose();
     } catch (error) {
-      console.error("Error deleting table:", error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -75,7 +71,6 @@ export default function TableEditForm({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-md">
-        {/* Header */}
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="font-semibold text-lg">✏️ Edit Meja</h2>
           <button
@@ -86,7 +81,6 @@ export default function TableEditForm({
           </button>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -95,7 +89,7 @@ export default function TableEditForm({
             <select
               value={lobbyId}
               onChange={(e) => setLobbyId(e.target.value)}
-              className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-xl px-4 py-2"
               required
             >
               {lobbies.map((lobby) => (
@@ -114,8 +108,7 @@ export default function TableEditForm({
               type="text"
               value={number}
               onChange={(e) => setNumber(e.target.value)}
-              placeholder="Contoh: A1, B2, 12"
-              className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-xl px-4 py-2"
               required
             />
           </div>
@@ -130,36 +123,34 @@ export default function TableEditForm({
               onChange={(e) => setSeats(parseInt(e.target.value))}
               min={1}
               max={20}
-              className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-xl px-4 py-2"
               required
             />
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-gray-300 rounded-xl py-2 hover:bg-gray-50 transition"
+              className="flex-1 border border-gray-300 rounded-xl py-2 hover:bg-gray-50"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-blue-600 text-white rounded-xl py-2 hover:bg-blue-700 transition disabled:opacity-50"
+              className="flex-1 bg-blue-600 text-white rounded-xl py-2 hover:bg-blue-700 disabled:opacity-50"
             >
               {loading ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
           </div>
 
-          {/* Delete Button (tanpa konfirmasi modal, hanya alert) */}
           <div className="pt-2 border-t border-gray-100">
             {!showDeleteConfirm ? (
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(true)}
-                className="w-full flex items-center justify-center gap-2 text-red-600 hover:text-red-700 text-sm py-2 transition"
+                className="w-full flex items-center justify-center gap-2 text-red-600 hover:text-red-700 text-sm py-2"
               >
                 <IconTrash size={16} />
                 Hapus Meja

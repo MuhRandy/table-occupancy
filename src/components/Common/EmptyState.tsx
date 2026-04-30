@@ -1,4 +1,14 @@
-export default function EmptyState({ icon, title, description }) {
+interface EmptyStateProps {
+  icon: string;
+  title: string;
+  description: string;
+}
+
+export default function EmptyState({
+  icon,
+  title,
+  description,
+}: EmptyStateProps) {
   return (
     <div className="text-center py-12 bg-white rounded-2xl border border-gray-200">
       <div className="text-5xl mb-3">{icon}</div>

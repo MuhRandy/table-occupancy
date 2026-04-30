@@ -38,7 +38,6 @@ export default function Dashboard() {
 
   const isLoading = lobbiesLoading || tablesLoading;
 
-  // ========== PERBAIKAN: Handler untuk update dan delete ==========
   const handleUpdateLobby = async (id: string, name: string) => {
     await updateLobby(id, name);
   };
@@ -184,7 +183,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Modals */}
       <LobbyForm
         isOpen={showLobbyForm}
         editLobby={editingLobby}
@@ -196,8 +194,8 @@ export default function Dashboard() {
       />
       <TableForm
         isOpen={showTableForm}
+        editTable={null}
         lobbies={lobbies}
-        preselectedLobbyId={selectedLobbyId}
         onClose={() => {
           setShowTableForm(false);
           setSelectedLobbyId(undefined);
